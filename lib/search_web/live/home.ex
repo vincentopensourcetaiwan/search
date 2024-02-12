@@ -1,6 +1,7 @@
 defmodule SearchWeb.Home do
   use SearchWeb, :live_view
 
+  import Ecto.Query
   alias Search.Repo
   alias Search.Contents.Tag
 
@@ -23,7 +24,13 @@ defmodule SearchWeb.Home do
   end
 
   def handle_event("submit", %{"name" => name}, socket) do
-    result = Repo.all(Tag)
+    query =
+      from(t in Tag,
+        where: like(t.name, ^"%#{name}%"),
+        select: %{tag_id: t.id, name: t.name}
+      )
+
+    result = Repo.all(query)
     socket = assign(socket, name: name, result: result)
     {:noreply, socket}
   end
